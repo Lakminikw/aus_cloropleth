@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
+<!--Credit http://palewi.re/posts/2012/03/26/leaflet-recipe-hover-events-features-and-polygons/ -->
 <head>
     <title>Leaflet GeoJSON example</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- All the stuff you need to install from Leaflet -->
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.css" />
     <!--[if lte IE 8]><link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.ie.css"  /><![endif]-->
     <script src="http://cdn.leafletjs.com/leaflet-0.4/leaflet.js"></script>
     <!-- My external GeoJSON file with the City Council boundaries in it -->
-    <script src="http://s3-us-west-1.amazonaws.com/palewire/leaflet-hover/citycouncil.geojson"></script>
+    <script src="http://raw.githubusercontent.com/ucg8j/aus_cloropleth/master/shiny_OSM_AusTiles/maps/au-states.geojson"></script>
 </head>
 <body style="margin:0; padding:0;">
     <!-- The <div> where we're put the map -->
@@ -18,11 +18,11 @@
         var map = new L.Map('map', {
             // Some basic options to keep the map still and prevent
             // the user from zooming and such.
-            scrollWheelZoom: false,
-            touchZoom: false,
-            doubleClickZoom: false,
-            zoomControl: false,
-            dragging: false
+            scrollWheelZoom: true,
+            touchZoom: true,
+            doubleClickZoom: true,
+            zoomControl: true,
+            dragging: true
         });
         // Prep the background tile layer graciously provided by stamen.com
         var stamenUrl = 'http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png';

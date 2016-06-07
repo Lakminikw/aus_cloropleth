@@ -11,8 +11,8 @@ shinyServer(function(input, output, session){
                 color       = 'white',
                 dashArray   = '3',
                 fillOpacity = 0.7,
-                fillColor   = ~pal(density),
-                popup       = ~sprintf("<strong>%s</strong><br/>%g someQty", STATE_NAME, density)
+                fillColor   = ~pal(gdal.states$DENSITY),
+                popup       = ~sprintf("<strong>%s</strong><br/>%g someQty", STATE_NAME, DENSITY)
             )
         
     })

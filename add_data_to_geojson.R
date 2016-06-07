@@ -11,6 +11,7 @@ gdal.states <- readOGR("maps/au-states.geojson", "OGRGeoJSON")
 summary(gdal.states)
 data.frame(gdal.states)
 
+#TODO adjust to have a join on state names
 # add vector of density values
 density             <- c(94.65,54,32,42,41,64,1,19,1)
 gdal.states$DENSITY <- density
