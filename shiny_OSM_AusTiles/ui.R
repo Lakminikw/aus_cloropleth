@@ -1,4 +1,5 @@
 fluidPage(
+    h2("Prototype"),
     leafletOutput("mymap"),
     p(),
     

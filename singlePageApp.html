@@ -1,64 +1,202 @@
 <!DOCTYPE html>
 <html>
 <!--Credit http://palewi.re/posts/2012/03/26/leaflet-recipe-hover-events-features-and-polygons/ -->
+
 <head>
-    <title>Leaflet GeoJSON example</title>
-    <!-- All the stuff you need to install from Leaflet -->
-    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.css" />
-    <!--[if lte IE 8]><link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.ie.css"  /><![endif]-->
-    <script src="http://cdn.leafletjs.com/leaflet-0.4/leaflet.js"></script>
-    <!-- My external GeoJSON file with the City Council boundaries in it -->
-    <script src="http://raw.githubusercontent.com/ucg8j/aus_cloropleth/master/shiny_OSM_AusTiles/maps/au-states.geojson"></script>
+		<title>Leaflet GeoJSON example</title>
+		<!-- Leaflet -->
+		<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+		<script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+		<!-- jQuery -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+		<!-- load geojson data as "statesData" -->
+		<script src="au-states-density.js"></script>
+		<style>
+			#map {
+				width: 800px;
+				height: 500px;
+			}
+
+			.info {
+				padding: 6px 8px;
+				font: 14px/16px Arial, Helvetica, sans-serif;
+				background: white;
+				background: rgba(255,255,255,0.8);
+				box-shadow: 0 0 15px rgba(0,0,0,0.2);
+				border-radius: 5px;
+			}
+			.info h4 {
+				margin: 0 0 5px;
+				color: #777;
+			}
+
+			.legend {
+				text-align: left;
+				line-height: 18px;
+				color: #555;
+			}
+			.legend i {
+				width: 18px;
+				height: 18px;
+				float: left;
+				margin-right: 8px;
+				opacity: 0.7;
+			}
+		</style>
 </head>
+
 <body style="margin:0; padding:0;">
-    <!-- The <div> where we're put the map -->
-    <div id="map" style="width: 100%; height: 350px;"></div>
-    <script type="text/javascript">
-        // Initialize the map object
-        var map = new L.Map('map', {
-            // Some basic options to keep the map still and prevent
-            // the user from zooming and such.
-            scrollWheelZoom: true,
-            touchZoom: true,
-            doubleClickZoom: true,
-            zoomControl: true,
-            dragging: true
-        });
-        // Prep the background tile layer graciously provided by stamen.com
-        var stamenUrl = 'http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png';
-        var stamenAttribution = 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>.';
-        var stamenLayer = new L.TileLayer(stamenUrl, {maxZoom: 18, attribution: stamenAttribution});
-        // Set the center on our city of angels
-        var center = new L.LatLng(34.0, -118.4);
-        map.setView(center, 9);
-        // Load the background tiles
-        map.addLayer(stamenLayer);
-        // Create an empty layer where we will load the polygons
-        var featureLayer = new L.GeoJSON();
-        // Set a default style for out the polygons will appear
-        var defaultStyle = {
-            color: "#2262CC",
-            weight: 2,
-            opacity: 0.6,
-            fillOpacity: 0.1,
-            fillColor: "#2262CC"
-        };
-        // Define what happens to each polygon just before it is loaded on to
-        // the map. This is Leaflet's special way of goofing around with your
-        // data, setting styles and regulating user interactions.
-        var onEachFeature = function(feature, layer) {
-            // All we're doing for now is loading the default style.
-            // But stay tuned.
-            layer.setStyle(defaultStyle);
-        };
-        // Add the GeoJSON to the layer. `boundaries` is defined in the external
-        // GeoJSON file that I've loaded in the <head> of this HTML document.
-        var featureLayer = L.geoJson(boundaries, {
-            // And link up the function to run when loading each feature
-            onEachFeature: onEachFeature
-        });
-        // Finally, add the layer to the map.
-        map.addLayer(featureLayer);
-    </script>
+		<!-- The <div> where we're put the map -->
+		<div id="map" style="width: 50%; height: 450px;"></div>
+		<script type="text/javascript">
+
+			// set up the map
+			var map = L.map('map').setView([-27.833, 133.583], 4);
+
+			// add osm map tile
+			L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+			{
+				attribution: 'Map data &copy <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+			}).addTo(map)
+
+			// initialise a control that shows state info on hover
+			// default position: 'topright'
+			var info = L.control();
+
+			// create necessary dom elements
+			info.onAdd = function (map) {
+				this._div = L.DomUtil.create('div', 'info');
+				this.update();
+				return this._div;
+			};
+
+			// information to be displayed
+			info.update = function (props) {
+				this._div.innerHTML = '<h4>Density</h4>' +  (props ?
+					'<b>' + props.STATE_NAME + '</b><br />' + props.DENSITY + ' people / mi<sup>2</sup>'
+					: 'Hover over a state');
+			};
+
+			// add info to map
+			info.addTo(map);
+
+			// define var prior to listeners
+			var geojson;
+
+			// define colours for density ranges
+			function getColor(d) {
+			    return d > 1000 ? '#800026' :
+			           d > 500  ? '#BD0026' :
+			           d > 200  ? '#E31A1C' :
+			           d > 100  ? '#FC4E2A' :
+			           d > 50   ? '#FD8D3C' :
+			           d > 20   ? '#FEB24C' :
+			           d > 10   ? '#FED976' :
+			                      '#FFEDA0';
+			}
+
+			// using getColors() return style for states
+			function style(feature) {
+			    return {
+			        fillColor: getColor(feature.properties.DENSITY),
+			        weight: 2,
+			        opacity: 1,
+			        color: 'white',
+			        dashArray: '3',
+			        fillOpacity: 0.7
+			    };
+			}
+
+			// on mouse over highlight polygon
+			function highlightFeature(e) {
+				var layer = e.target;
+
+				layer.setStyle({
+					weight: 3,
+					color: '#666',
+					dashArray: '',
+					fillOpacity: 0.7
+				});
+
+				if (!L.Browser.ie && !L.Browser.opera) {
+					layer.bringToFront();
+				}
+
+				info.update(layer.feature.properties);
+			}
+
+			// on mouse out reset style
+			function resetHighlight(e) {
+				geojson.resetStyle(e.target);
+				info.update();
+			}
+
+			// zoom to clicked polygon
+			function zoomToFeature(e) {
+				map.fitBounds(e.target.getBounds());
+			}
+
+			// define what happens on interactive events
+			function onEachFeature(feature, layer) {
+				layer.on({
+					mouseover: highlightFeature,
+					mouseout: resetHighlight,
+					click: zoomToFeature
+				});
+			}
+
+			// add all options to the polygons
+			geojson = L.geoJson(statesData, {
+				style: style,
+				onEachFeature: onEachFeature
+			}).addTo(map);
+
+
+
+////.ajax method of getting data from other domain ////////////////////////////////////////
+// problem recognising features - not sure why ///////////////////////
+			// // add states to map
+			// var states = new L.geoJson();
+			// states.addTo(map);
+
+			// // load state data using HTTP get request
+			// $.ajax({
+			// dataType: "json",
+			// url: "https://raw.githubusercontent.com/ucg8j/aus_cloropleth/master/shiny_OSM_AusTiles/maps/au-states-density.geojson",
+			// success: function(data) {
+			//     $(data.features).each(function(key, data) {
+			//         states.addData(data);
+			//     });
+			// }
+			// }).error(function() {});
+
+			// // define colours for density ranges
+			// 	function getColor(d) {
+			// 		return d > 1000 ? '#800026' :
+			// 					 d > 500  ? '#BD0026' :
+			// 					 d > 200  ? '#E31A1C' :
+			// 					 d > 100  ? '#FC4E2A' :
+			// 					 d > 50   ? '#FD8D3C' :
+			// 					 d > 20   ? '#FEB24C' :
+			// 					 d > 10   ? '#FED976' :
+			// 										  '#FFEDA0';
+			// 	}
+
+			// // using getColors() return style for states
+			// function style(feature) {
+			//     return {
+			//         fillColor: getColor(feature.properties.density),
+			//         weight: 2,
+			//         opacity: 1,
+			//         color: 'white',
+			//         dashArray: '3',
+			//         fillOpacity: 0.7
+			//     };
+			// }
+
+			// L.geoJson(states, {style: style}).addTo(map);
+////////////////////////////////////////////////////////////////////////////////
+		</script>
 </body>
+
 </html>
