@@ -10,7 +10,7 @@
 		<!-- jQuery -->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 		<!-- load geojson data as "statesData" -->
-		<script src="au-states-density.js"></script>
+		<script src="au-postcodes-Visvalingam-0.1-density.js"></script>
 		<style>
 			#map {
 				width: 800px;
@@ -73,8 +73,8 @@
 			// information to be displayed
 			info.update = function (props) {
 				this._div.innerHTML = '<h4>Density</h4>' +  (props ?
-					'<b>' + props.STATE_NAME + '</b><br />' + props.DENSITY + ' people / mi<sup>2</sup>'
-					: 'Hover over a state');
+					'<b> Postcode: ' + props.POA_NAME + '</b><br />' + props.density + ' people / mi<sup>2</sup>'
+					: 'Hover over a postcode');
 			};
 
 			// add info to map
@@ -98,7 +98,7 @@
 			// using getColors() return style for states
 			function style(feature) {
 			    return {
-			        fillColor: getColor(feature.properties.DENSITY),
+			        fillColor: getColor(feature.properties.density),
 			        weight: 2,
 			        opacity: 1,
 			        color: 'white',
@@ -146,56 +146,11 @@
 			}
 
 			// add all options to the polygons
-			geojson = L.geoJson(statesData, {
+			geojson = L.geoJson(postcodesData, {
 				style: style,
 				onEachFeature: onEachFeature
 			}).addTo(map);
 
-
-
-////.ajax method of getting data from other domain ////////////////////////////////////////
-// problem recognising features - not sure why ///////////////////////
-			// // add states to map
-			// var states = new L.geoJson();
-			// states.addTo(map);
-
-			// // load state data using HTTP get request
-			// $.ajax({
-			// dataType: "json",
-			// url: "https://raw.githubusercontent.com/ucg8j/aus_cloropleth/master/shiny_OSM_AusTiles/maps/au-states-density.geojson",
-			// success: function(data) {
-			//     $(data.features).each(function(key, data) {
-			//         states.addData(data);
-			//     });
-			// }
-			// }).error(function() {});
-
-			// // define colours for density ranges
-			// 	function getColor(d) {
-			// 		return d > 1000 ? '#800026' :
-			// 					 d > 500  ? '#BD0026' :
-			// 					 d > 200  ? '#E31A1C' :
-			// 					 d > 100  ? '#FC4E2A' :
-			// 					 d > 50   ? '#FD8D3C' :
-			// 					 d > 20   ? '#FEB24C' :
-			// 					 d > 10   ? '#FED976' :
-			// 										  '#FFEDA0';
-			// 	}
-
-			// // using getColors() return style for states
-			// function style(feature) {
-			//     return {
-			//         fillColor: getColor(feature.properties.density),
-			//         weight: 2,
-			//         opacity: 1,
-			//         color: 'white',
-			//         dashArray: '3',
-			//         fillOpacity: 0.7
-			//     };
-			// }
-
-			// L.geoJson(states, {style: style}).addTo(map);
-////////////////////////////////////////////////////////////////////////////////
 		</script>
 </body>
 
